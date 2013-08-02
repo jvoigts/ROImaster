@@ -290,7 +290,20 @@ while run
         end;
         Rois.N=numel(Rois.groups);
     end;
+  
+      if b==112 %p, play movie
+          ii=I; %start with whats on screen
+          mfactor=.3;
+          for i=1:100;%size(stack,3);
+              ii=(ii.*(1-mfactor))+stack(:,:,i).*mfactor;
+              %clf;
+              h=imagesc(ii);
     
+              drawnow;
+              delete(h);
+          end;
+      end;
+          
     if b==110 %n, next group
         updatexc=0;
         selected_group=selected_group+1;
