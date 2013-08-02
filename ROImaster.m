@@ -73,7 +73,7 @@ set(gca, 'position', [0.02 0.04 1 .94]);
 updatexc=0;
 
 Ngroups=60*3;
-UIheight=max(size(stack,1),400);
+UIheight=max(size(stack,1),200);
 
 stdim=(std(single(stack),[],3));
 meanim=mean(stack,3);
@@ -350,7 +350,10 @@ while run
         
         Rois.masks{Rois.N}=logical(mask);
         Rois.groups(Rois.N)=selected_group;
-        Rois.outlines{Rois.N}=t.getPosition;
+        r=t.getPosition;
+        r=max(r,1); r(:,1)=min(r(:,1),size(I,2));r(:,2)=min(r(:,2),size(I,1));
+        Rois.outlines{Rois.N}=r;
+        
         Rois.labels{Rois.N}='';
         
     end;
