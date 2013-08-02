@@ -58,7 +58,7 @@ Rois.groups=[]; % int id per mask, assigning to groups
 Rois.grouplabels=[]; %laber per roi, not per group
 Rois.outlines=[] % mostly just for plotting
 
-%% try interactive xcorr thing
+%% run ROImaster
 figure(1);
 run=1;
 displayxc=0;
@@ -75,8 +75,8 @@ stdim=(std(single(stack),[],3));
 meanim=mean(stack,3);
 
 for i=1:Ngroups
-    roiUIpos(i,1)=-30*ceil(i/60);
-    roiUIpos(i,2)=2+(rem(i-1,60)/60)*UIheight;
+    roiUIpos(end-i+1,1)=-30*ceil(i/60);
+    roiUIpos(end-i+1,2)=2+(rem(i-1,60)/60)*UIheight;
 end;
 
 while run
@@ -229,6 +229,12 @@ while run
         newlabel = inputdlg(prompt,dlg_title,num_lines,def);
         
         Rois.grouplabels{selected_group}=newlabel;
+        
+    end;
+    
+    if b==120 %x
+        %delete current group
+        
         
     end;
     
