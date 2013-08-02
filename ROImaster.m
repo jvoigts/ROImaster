@@ -76,6 +76,8 @@ UIheight=500;
 stdim=(std(single(stack),[],3));
 meanim=mean(stack,3);
 
+f=normpdf([-10:10],0,1);
+
 for i=1:Ngroups
     roiUIpos(end-i+1,1)=-30*ceil(i/60);
     roiUIpos(end-i+1,2)=2+(rem(i-1,60)/60)*UIheight;
@@ -212,8 +214,18 @@ while run
             tr(i,t)=mean(mean(stack(ya:yb,xa:xb,t).*Rois.masks{sel(i)}(ya:yb,xa:xb)));
         end;
     end;
+    tr=conv2(tr,f,'same');
     if numel(sel)>0
         plot(((tr./max(tr(:)))'.*100)-200, repmat( [1:size(stack,3)],numel(sel),1)' );
+    end;
+    
+    % plot last clicked point just as super quick indicator
+    if updatexc
+        quickprev=squeeze(mean(mean(stack([-1:1]+round(x),[-1:1]+round(y),:))));
+         quickprev=conv2(quickprev',f,'same');
+    end;
+    try
+        plot(((quickprev./max(quickprev(:)))'.*100)-200,  [1:size(stack,3)]' ,'k--');
     end;
     
     xlim([-200 size(stack,2)]);
@@ -328,6 +340,12 @@ while run
     end;
     title(readInDirectory);
 end;
+
+%% save Rois
+
+save([Rois.data_dir(1:end-11),'ROIs.mat'],'Rois')
+disp(['saved to ',[Rois.data_dir(1:end-11),'ROIs.mat']]);
+
 
 %% Get F(roi) and F(neuropil) from an imagestack on disk.
 tic
