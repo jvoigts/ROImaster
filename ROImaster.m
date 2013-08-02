@@ -93,10 +93,10 @@ while run
             end;
         else
             text(roiUIpos(i,1),roiUIpos(i,2),[num2str(i) ,'-',num2str(ningroup)]);
-              try
+            try
                 if numel(Rois.grouplabels{i})>0
-                       text(roiUIpos(i,1),roiUIpos(i,2),[num2str(i) ,'-',num2str(ningroup)],'BackgroundColor',[.7 .7 .7]);
-            
+                    text(roiUIpos(i,1),roiUIpos(i,2),[num2str(i) ,'-',num2str(ningroup)],'BackgroundColor',[.7 .7 .7]);
+                    
                 end;
             end;
             
@@ -192,7 +192,7 @@ while run
     %plot outlines
     for i=1:Rois.N
         if (selected_group==Rois.groups(i))
-         plot(Rois.outlines{i}([1:end,1],1),Rois.outlines{i}([1:end,1],2),'color',[1 1 1].*1);
+            plot(Rois.outlines{i}([1:end,1],1),Rois.outlines{i}([1:end,1],2),'color',[1 1 1].*1);
         else
             plot(Rois.outlines{i}([1:end,1],1),Rois.outlines{i}([1:end,1],2),'color',[1 1 1].*.5);
         end;
@@ -212,8 +212,9 @@ while run
             tr(i,t)=mean(mean(stack(ya:yb,xa:xb,t).*Rois.masks{sel(i)}(ya:yb,xa:xb)));
         end;
     end;
-    plot((tr'.*2)-200, repmat( [1:size(stack,3)],numel(sel),1)' );
-    
+    if numel(sel)>0
+        plot(((tr./max(tr(:)))'.*100)-200, repmat( [1:size(stack,3)],numel(sel),1)' );
+    end;
     
     xlim([-200 size(stack,2)]);
     ylim([0 size(stack,1)]);
@@ -236,7 +237,7 @@ while run
     
     
     if b==117 % u -undo last addition/ delete last ROI
-         %delete current group
+        %delete current group
         sel= Rois.N;
         [~,ii]=sort(-sel);
         sel=sel(ii); % gotta delete from the end to the beginnning for indexing reasons
@@ -279,8 +280,8 @@ while run
     end;
     
     if b==110 %n, next group
-         updatexc=0;
-         selected_group=selected_group=1;
+        updatexc=0;
+        selected_group=selected_group+1;
     end;
     
     if b==100 %d
@@ -316,7 +317,7 @@ while run
         % set(gca, 'position', [0 0 1 1]);
         % drawnow;
         %displayxc=0;
-         updatexc=0;
+        updatexc=0;
         Rois.N=Rois.N+1;
         
         Rois.masks{Rois.N}=logical(mask);
@@ -341,14 +342,14 @@ for i=1:numImages
     
     imageToMeasure=uint16(imread([readInDirectory 'registered_' int2str(i)],'png'));
     
-   
+    
     for j=1:Rois.N
         xa=round(min(Rois.outlines{j}(:,1)));
         xb=round(max(Rois.outlines{j}(:,1)));
         ya=round(min(Rois.outlines{j}(:,2)));
         yb=round(max(Rois.outlines{j}(:,2)));
-
-       roiValues(i,j)=mean(mean(imageToMeasure(ya:yb,xa:xb).*uint16(Rois.masks{j}(ya:yb,xa:xb))));
+        
+        roiValues(i,j)=mean(mean(imageToMeasure(ya:yb,xa:xb).*uint16(Rois.masks{j}(ya:yb,xa:xb))));
     end;
     
 end
