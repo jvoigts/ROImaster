@@ -20,7 +20,7 @@
 
 %% read subset of stack
 
-readInDirectory='/media/New Volume/2p/NT_2P4/TSeries-07302013-1301-005/registered/';
+readInDirectory='/media/New Volume/2p/NT_2P4/TSeries-07302013-1301-006/registered/';
 %expects pngs
 
 files = dir([readInDirectory '*.png']);
@@ -48,6 +48,10 @@ for i=1:1500;%numImages
     
     % ts(i)=mean(mean(I(370:376,272:287)));
 end
+%% load
+
+load([readInDirectory(1:end-11),'ROIs.mat'])
+
 
 %% reset ROIS
 
@@ -108,13 +112,8 @@ while run
         end;
     end;
     
-    
-    
-    
-    
     if displayxc
-        
-        
+ 
         if 0
             if  updatexc
                 % 2 step refinement
