@@ -11,6 +11,8 @@
 % D:display std
 % Q: quit
 % X: delete ROIs from current group
+% U: undo/remove last ROI
+% N: step to next group
 %
 %
 % 2013 jvoigts@mit.edu
@@ -274,6 +276,11 @@ while run
             end;
         end;
         Rois.N=numel(Rois.groups);
+    end;
+    
+    if b==110 %n, next group
+         updatexc=0;
+         selected_group=selected_group=1;
     end;
     
     if b==100 %d
