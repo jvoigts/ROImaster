@@ -210,7 +210,7 @@ while run
             tr(i,t)=mean(mean(stack(ya:yb,xa:xb,t).*Rois.masks{sel(i)}(ya:yb,xa:xb)));
         end;
     end;
-    plot((tr'.*5)-200, repmat( [1:size(stack,3)],numel(sel),1)' );
+    plot((tr'.*2)-200, repmat( [1:size(stack,3)],numel(sel),1)' );
     
     
     xlim([-200 size(stack,2)]);
@@ -229,6 +229,29 @@ while run
         newlabel = inputdlg(prompt,dlg_title,num_lines,def);
         
         Rois.grouplabels{selected_group}=newlabel;
+        
+    end;
+    
+    
+    if b==117 % u -undo last addition/ delete last ROI
+         %delete current group
+        sel= Rois.N;
+        [~,ii]=sort(-sel);
+        sel=sel(ii); % gotta delete from the end to the beginnning for indexing reasons
+        if numel(sel)>0
+            for s=sel
+                Rois.masks{s}=[];
+                try
+                    Rois.masks(cellfun(@(d) isempty(d),Rois.masks))=[];
+                end;
+                Rois.groups(s)=[];
+                Rois.outlines{s}=[];
+                try
+                    Rois.outlines(cellfun(@(d) isempty(d),Rois.outlines))=[];
+                end;
+            end;
+        end;
+        Rois.N=numel(Rois.groups);
         
     end;
     
@@ -285,8 +308,8 @@ while run
         % ylim([0 size(stack,1)]);
         % set(gca, 'position', [0 0 1 1]);
         % drawnow;
-        displayxc=0;
-        
+        %displayxc=0;
+         updatexc=0;
         Rois.N=Rois.N+1;
         
         Rois.masks{Rois.N}=logical(mask);
