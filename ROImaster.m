@@ -224,7 +224,7 @@ while run
     
     % plot last clicked point just as super quick indicator
     if updatexc
-        quickprev=squeeze(mean(mean(stack([-1:1]+round(x),[-1:1]+round(y),:))));
+        quickprev=squeeze(mean(mean(stack([-1:1]+round(y),[-1:1]+round(x),:))));
          quickprev=conv2(quickprev',f,'same');
     end;
     try
@@ -331,6 +331,7 @@ while run
         displayxc=0;
     end;
     if b==113 % q
+        
         disp('exited')
         run=0;
     end;
