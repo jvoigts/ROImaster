@@ -73,7 +73,7 @@ set(gca, 'position', [0.02 0.04 1 .94]);
 updatexc=0;
 
 Ngroups=60*3;
-UIheight=500;
+UIheight=max(size(stack,1),400);
 
 stdim=(std(single(stack),[],3));
 meanim=mean(stack,3);
@@ -232,7 +232,7 @@ while run
     end;
     
     xlim([-200 size(stack,2)]);
-    ylim([0 size(stack,1)]);
+    ylim([0 UIheight]);
     set(gca, 'position', [0 0 1 1]);
     
     
