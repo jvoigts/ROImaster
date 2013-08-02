@@ -234,8 +234,23 @@ while run
     
     if b==120 %x
         %delete current group
-        
-        
+        sel=find(selected_group==Rois.groups);
+        [~,ii]=sort(-sel);
+        sel=sel(ii); % gotta delete from the end to the beginnning for indexing reasons
+        if numel(sel)>0
+            for s=sel
+                Rois.masks{s}=[];
+                try
+                    Rois.masks(cellfun(@(d) isempty(d),Rois.masks))=[];
+                end;
+                Rois.groups(s)=[];
+                Rois.outlines{s}=[];
+                try
+                    Rois.outlines(cellfun(@(d) isempty(d),Rois.outlines))=[];
+                end;
+            end;
+        end;
+        Rois.N=numel(Rois.groups);
     end;
     
     if b==100 %d
