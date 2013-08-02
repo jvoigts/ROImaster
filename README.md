@@ -13,3 +13,4 @@ ROImaster
  * X: delete ROIs from current group
  * U: undo/remove last ROI
  * N: step to next group
+ * P: play quick movie
