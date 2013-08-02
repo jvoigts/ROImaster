@@ -20,7 +20,7 @@
 
 %% read subset of stack
 
-readInDirectory='/media/New Volume/2p/NT_2P4/TSeries-07302013-1301-006/registered/';
+readInDirectory='/media/New Volume/2p/NT_2P4/TSeries-07302013-1301-005/registered/';
 %expects pngs
 
 files = dir([readInDirectory '*.png']);
@@ -60,6 +60,8 @@ Rois.groups=[]; % int id per mask, assigning to groups
 Rois.grouplabels=[]; %laber per roi, not per group
 Rois.outlines=[] % mostly just for plotting
 
+selected_group=1;
+
 %% run ROImaster
 figure(1);
 run=1;
@@ -67,7 +69,7 @@ displayxc=0;
 plotstd=1;
 set(gca, 'position', [0.02 0.04 1 .94]);
 
-selected_group=1;
+
 updatexc=0;
 
 Ngroups=60*3;
@@ -78,6 +80,7 @@ meanim=mean(stack,3);
 
 f=normpdf([-10:10],0,1);
 
+roiUIpos=zeros(Ngroups,2);
 for i=1:Ngroups
     roiUIpos(end-i+1,1)=-30*ceil(i/60);
     roiUIpos(end-i+1,2)=2+(rem(i-1,60)/60)*UIheight;
