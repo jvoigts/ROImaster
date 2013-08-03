@@ -20,7 +20,7 @@
 
 %% read subset of stack
 
-readInDirectory='/media/New Volume/2p/NT_2P4/TSeries-07302013-1301-006/registered/';
+readInDirectory='/media/New Volume/2p/NT_2P4/TSeries-07302013-1301-004/registered/';
 %expects pngs
 
 files = dir([readInDirectory '*.png']);
@@ -29,9 +29,16 @@ numImages=numel(files)
 stack= [];
 c=0;
 ff=fspecial('gaussian',11,0.5);
-for i=1:1500;%numImages
+
+nstack=min(1500,numImages);
+
+for i=1:nstack;
     c=c+1;
-    disp(i);
+    
+    if (rem(i,100)==0)
+        fprintf('%d/%d (%d%%)\n',i,numImages,round(100*(i./numImages)));
+    end;
+    
     
     %fnum=ceil(rand*(numImages-1));
     fnum=i;
@@ -338,17 +345,19 @@ while run
     if b==32 %space
         t= imfreehand(gca,'Closed' ,1);
         t.setClosed(1);
-        mask=t.createMask;
+        m=t.createMask;
         %  imagesc(mask);
         %xlim([-100 size(stack,2)]);
         % ylim([0 size(stack,1)]);
         % set(gca, 'position', [0 0 1 1]);
         % drawnow;
         %displayxc=0;
+         
         updatexc=0;
+        
         Rois.N=Rois.N+1;
         
-        Rois.masks{Rois.N}=logical(mask);
+        Rois.masks{Rois.N}=logical(m);
         Rois.groups(Rois.N)=selected_group;
         r=t.getPosition;
         r=max(r,1); r(:,1)=min(r(:,1),size(I,2));r(:,2)=min(r(:,2),size(I,1));
