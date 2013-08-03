@@ -182,7 +182,7 @@ while run
             
         end
         if updatexc
-            xc(ceil(y),ceil(x))=0;
+            xc(ceil(y+[-1:1]),ceil(x+[-1:1]))=0;
         end;
         image((1-mask).*I./10+ ((xc*200)))
         daspect([1 1 1]);
@@ -400,3 +400,17 @@ for i=1:numImages
     
 end
 toc
+
+%% plot extracted values grouped and mean subtracted
+figure(1); clf; hold on;
+f=normpdf([-10:10],0,4);
+c=0;
+[uu]=unique(Rois.groups);
+c=0;
+for i=1:numel(uu)
+    c=c+1;
+    sel=find(uu(i)==Rois.groups);
+    plot(conv2(roiValues(:,sel)- repmat(mean(roiValues(:,sel),1)',1,size(roiValues,1))' ,f','same')+c*100);
+    drawnow;
+end;
+
