@@ -21,6 +21,9 @@
 %% read subset of stack
 
 readInDirectory='/media/New Volume/2p/NT_2P4/TSeries-07302013-1301-004/registered/';
+readInDirectory='/media/My Passport/19aug2013/TSeries-08192013-nt2p4_113-001/registered/';
+readInDirectory='/media/My Passport/2p/19aug2013/data_08192013_nt2p6_odd_dir/TSeries-08192013-nt2p6_346-001/registered/';
+
 %expects pngs
 
 files = dir([readInDirectory '*.png']);
@@ -36,7 +39,7 @@ for i=1:nstack;
     c=c+1;
     
     if (rem(i,100)==0)
-        fprintf('%d/%d (%d%%)\n',i,numImages,round(100*(i./numImages)));
+        fprintf('%d/%d (%d%%)\n',i,numImages,round(100*(i./nstack)));
     end;
     
     
@@ -160,7 +163,7 @@ while run
                 
                 it=1;
                 while it<50
-                    sig=find(xc>0.04);
+                    sig=find(xc>0.08);
                     mask=I.*0; mask(sig)=1;
                     mask=conv2(mask,ones(5),'same')>0;
                     update=find((xc==0).*(mask==1));
@@ -342,6 +345,26 @@ while run
         run=0;
     end;
     
+    if b==98 % advance and start drawing
+        updatexc=0;
+        selected_group=selected_group+1;
+        t= imfreehand(gca,'Closed' ,1);
+        t.setClosed(1);
+        m=t.createMask;
+        
+        updatexc=0;
+        
+        Rois.N=Rois.N+1;
+        
+        Rois.masks{Rois.N}=logical(m);
+        Rois.groups(Rois.N)=selected_group;
+        r=t.getPosition;
+        r=max(r,1); r(:,1)=min(r(:,1),size(I,2));r(:,2)=min(r(:,2),size(I,1));
+        Rois.outlines{Rois.N}=r;
+        
+        Rois.labels{Rois.N}='';
+    end;
+        
     if b==32 %space
         t= imfreehand(gca,'Closed' ,1);
         t.setClosed(1);
@@ -369,10 +392,35 @@ while run
     title(readInDirectory);
 end;
 
-%% save Rois
 
+
+
+%% make neuropil ROIs for each ROI
+allmasks=  Rois.masks{1};
+for j=2:Rois.N
+    allmasks = allmasks + Rois.masks{j};
+end;
+allmasks=allmasks>0;
+
+vismasks=Rois.masks{1}.*0;
+se=strel('disk',4);
+for j=1:Rois.N
+    Rois.np_masks{j} = (imdilate(Rois.masks{j},se)-allmasks)>0;
+    
+    hold off;
+    vismasks=vismasks+Rois.np_masks{j};
+    imagesc( vismasks);
+    drawnow;
+    
+    p=regionprops(Rois.np_masks{j});
+    Rois.np_outlines{j}=p.BoundingBox;
+            
+end;
+
+%% save Rois
 save([Rois.data_dir(1:end-11),'ROIs.mat'],'Rois')
 disp(['saved to ',[Rois.data_dir(1:end-11),'ROIs.mat']]);
+
 
 
 %% Get F(roi) and F(neuropil) from an imagestack on disk.
@@ -388,14 +436,20 @@ for i=1:numImages
     
     imageToMeasure=uint16(imread([readInDirectory 'registered_' int2str(i)],'png'));
     
-    
     for j=1:Rois.N
-        xa=round(min(Rois.outlines{j}(:,1)));
-        xb=round(max(Rois.outlines{j}(:,1)));
-        ya=round(min(Rois.outlines{j}(:,2)));
-        yb=round(max(Rois.outlines{j}(:,2)));
-        
+        xa=ceil(min(Rois.outlines{j}(:,1)));
+        xb=floor(max(Rois.outlines{j}(:,1)));
+        ya=ceil(min(Rois.outlines{j}(:,2)));
+        yb=floor(max(Rois.outlines{j}(:,2)));
         roiValues(i,j)=mean(mean(imageToMeasure(ya:yb,xa:xb).*uint16(Rois.masks{j}(ya:yb,xa:xb))));
+        
+        if 1 % normalize?
+            xa=ceil(Rois.np_outlines{j}(1));
+            xb=floor(Rois.np_outlines{j}(1)+Rois.np_outlines{j}(3));
+            ya=ceil(Rois.np_outlines{j}(2));
+            yb=floor(Rois.np_outlines{j}(2)+Rois.np_outlines{j}(4));
+            roiValues_norm(i,j)=roiValues(i,j)./mean(mean(imageToMeasure(ya:yb,xa:xb).*uint16(Rois.np_masks{j}(ya:yb,xa:xb))));
+        end;
     end;
     
 end
@@ -403,14 +457,104 @@ toc
 
 %% plot extracted values grouped and mean subtracted
 figure(1); clf; hold on;
-f=normpdf([-10:10],0,4);
+f=normpdf([-10:10],0,1);
 c=0;
 [uu]=unique(Rois.groups);
 c=0;
 for i=1:numel(uu)
     c=c+1;
     sel=find(uu(i)==Rois.groups);
-    plot(conv2(roiValues(:,sel)- repmat(mean(roiValues(:,sel),1)',1,size(roiValues,1))' ,f','same')+c*100);
+    plot(conv2(roiValues(1:2:end,sel)- repmat(mean(roiValues(1:2:end,sel),1)',1,size(roiValues,1)/2)' ,f','same')+c*100);
     drawnow;
 end;
+
+%% look at xcors
+xc=(corrcoef(roiValues));
+xc=xc.*(1-eye(size(xc)));
+clf;
+imagesc(xc)
+
+%% run spike extrction
+
+% set simulation metadata
+T       =  size(roiValues,1); % # of time steps% set simulation metadata
+V.dt    =  0.0283;  % time step size
+V.fast_poiss =0;
+
+% initialize params
+P.a     = 1;    % observation scale
+P.b     = 0.0;    % observation bias
+tau     = 2.6;    % decay time constant
+P.gam   = 1-V.dt/tau; % C(t) = gam*C(t-1)
+P.lam   = 0.1;  % firing rate = lam*dt
+P.sig   = 0.1;  % standard deviation of observation noise 
+
+% simulate data
+N = poissrnd(P.lam*V.dt*ones(T,1)); % simulate spike train
+C = filter(1,[1 -P.gam],N);         % calcium concentration
+F = P.a*C+P.b + P.sig*randn(T,1);   % observations
+
+roiValues_deconv=[];
+
+for c=1:size(roiValues_norm,2)
+    
+    %F=roiValues_norm(:,c)-mean(roiValues_norm(:,c));
+    F=roiValues_norm(:,c);
+    
+    F=F./std(F);
+    F(isnan(F))=0;
+    % fast oopsi
+    [Nhat Phat] = fast_oopsi(F,V,P);
+   
+    
+    % plot results
+    figure(1), clf; hold on;
+    tvec=0:V.dt:(T-1)*V.dt;
+    plot(tvec,F);
+    plot(tvec,Nhat*2,'r');
+    xlim([0 200]);
+    
+    drawnow;
+    
+    roiValues_deconv(:,c)=Nhat;
+    
+end;
+
+%% SAVE
+
+disp(readInDirectory);
+
+%manually cd to data dir
+save('roivalues.mat','roiValues','roiValues_norm','roiValues_deconv')
+
+%%
+axis('tight'), ylabel('C (au)')
+h(3)=subplot(413); stem(tvec,N); hold on, plot(tvec,Nhat,'r','linewidth',1), axis('tight'), ylabel('fast')
+Nsmc = M.nbar/max(M.nbar);
+Nsmc(Nsmc<0.1)=0;
+h(4)=subplot(414); stem(tvec,N); hold on, plot(tvec,Nsmc,'k','linewidth',2); axis('tight'), ylabel('smc')
+xlabel('time (sec)')
+linkaxes(h,'x')
+
+
+
+
+%%
+
+figure(1); clf; hold on;
+
+for c=1:size(roiValues,2)
+    a=zeros(1,123)';
+    for i=1:799
+        s=((i-1)*122)+1;
+        a=a+(roiValues(s:s+122,c));
+       
+    end;
+    a=a./799; 
+    plot(a/mean(a(:))+c*.1)
+    drawnow;
+    
+    
+end;
+
 
