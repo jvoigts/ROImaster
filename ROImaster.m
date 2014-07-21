@@ -23,6 +23,15 @@
 readInDirectory='/media/New Volume/2p/NT_2P4/TSeries-07302013-1301-004/registered/';
 readInDirectory='/media/My Passport/19aug2013/TSeries-08192013-nt2p4_113-001/registered/';
 readInDirectory='/media/My Passport/2p/19aug2013/data_08192013_nt2p6_odd_dir/TSeries-08192013-nt2p6_346-001/registered/';
+readInDirectory='/media/My Passport/2p/23Aug2013/TSeries-08232013-nt_2p4_81_300-001/registered/';
+readInDirectory='/media/My Passport/2p/23Aug2013/TSeries-08232013-nt_2p4_81_300-002/registered/';
+readInDirectory='/media/data_2p/2p/27aug2013/TSeries-08272013-1319-001/registered/';
+readInDirectory='/media/data_2p/2p/06Sep2013/TSeries-09062013-cdSom5_203-003/registered/';
+%readInDirectory='/media/data_2p/2p/06Sep2013/TSeries-09062013-1138-001/registered/';
+%readInDirectory='/media/data_2p/2p/06Sep2013/TSeries-09062013-1138-002/registered/';
+
+readInDirectory='/media/data_2p/2p/20july2014/20July2014_NT_2P_7/TSeries-07202014_c2_400um-001/registered/';
+
 
 %expects pngs
 
@@ -63,6 +72,7 @@ end
 load([readInDirectory(1:end-11),'ROIs.mat'])
 
 
+selected_group=1;
 %% reset ROIS
 
 Rois=[];
@@ -75,6 +85,37 @@ Rois.grouplabels=[]; %laber per roi, not per group
 Rois.outlines=[] % mostly just for plotting
 
 selected_group=1;
+
+%% make local Xcorr
+% code adapted from http://labrigger.com/blog/2013/06/13/local-cross-corr-images/
+
+w=1; % window size
+
+% Initialize and set up parameters
+ymax=size(stack,1);
+xmax=size(stack,2);
+numFrames=size(stack,3);
+ccimage=zeros(ymax,xmax);
+
+for y=1+w:ymax-w
+    for x=1+w:xmax-w
+        % Center pixel
+        thing1 = reshape(stack(y,x,:)-mean(stack(y,x,:),3),[1 1 numFrames]); % Extract center pixel's time course and subtract its mean
+        ad_a   = sum(thing1.*thing1,3);    % Auto corr, for normalization later
+        
+        % Neighborhood
+        a = stack(y-w:y+w,x-w:x+w,:);         % Extract the neighborhood
+        b = mean(stack(y-w:y+w,x-w:x+w,:),3); % Get its mean
+        thing2 = bsxfun(@minus,a,b);       % Subtract its mean
+        ad_b = sum(thing2.*thing2,3);      % Auto corr, for normalization later
+        
+        % Cross corr
+        ccs = sum(bsxfun(@times,thing1,thing2),3)./sqrt(bsxfun(@times,ad_a,ad_b)); % Cross corr with normalization
+        ccs((numel(ccs)+1)/2) = [];        % Delete the middle point
+        ccimage(y,x) = mean(ccs(:));       % Get the mean cross corr of the local neighborhood
+    end
+end
+
 
 %% run ROImaster
 figure(1);
@@ -97,6 +138,7 @@ f=normpdf([-10:10],0,1);
 roiUIpos=zeros(Ngroups,2);
 for i=1:Ngroups
     roiUIpos(end-i+1,1)=-30*ceil(i/60);
+    
     roiUIpos(end-i+1,2)=2+(rem(i-1,60)/60)*UIheight;
 end;
 
@@ -123,7 +165,7 @@ while run
     end;
     
     if displayxc
- 
+        
         if 0
             if  updatexc
                 % 2 step refinement
@@ -185,19 +227,20 @@ while run
             
         end
         if updatexc
-            xc(ceil(y+[-1:1]),ceil(x+[-1:1]))=0;
+            xc(ceil(y+[-1:1]),ceil(x+[-1:1]))=xc(ceil(y+[-1:1]),ceil(x+[-1:1])).*.5;
         end;
         image((1-mask).*I./10+ ((xc*200)))
         daspect([1 1 1]);
     else
         if plotstd
             I=stdim;
+            I=ccimage;
         else
             I=meanim;
         end;
         imagesc(I); daspect([1 1 1]);
         if plotstd
-            xlabel('plotting std');
+            xlabel('plotting loca xcorr');
         else
             xlabel('plotting mean');
         end;
@@ -206,9 +249,9 @@ while run
     %plot outlines
     for i=1:Rois.N
         if (selected_group==Rois.groups(i))
-            plot(Rois.outlines{i}([1:end,1],1),Rois.outlines{i}([1:end,1],2),'color',[1 1 1].*1);
+            plot(Rois.outlines{i}([1:end,1],1),Rois.outlines{i}([1:end,1],2),'color',[.8 1 1].*1);
         else
-            plot(Rois.outlines{i}([1:end,1],1),Rois.outlines{i}([1:end,1],2),'color',[1 1 1].*.5);
+            plot(Rois.outlines{i}([1:end,1],1),Rois.outlines{i}([1:end,1],2),'color',[.4 1 1].*.5);
         end;
         text(mean(Rois.outlines{i}(:,1)),mean(Rois.outlines{i}(:,2)),num2str(Rois.groups(i)),'color',[1 1 1].*.6);
     end;
@@ -234,7 +277,7 @@ while run
     % plot last clicked point just as super quick indicator
     if updatexc
         quickprev=squeeze(mean(mean(stack([-1:1]+round(y),[-1:1]+round(x),:))));
-         quickprev=conv2(quickprev',f,'same');
+        quickprev=conv2(quickprev',f,'same');
     end;
     try
         plot(((quickprev./max(quickprev(:)))'.*100)-200,  [1:size(stack,3)]' ,'k--');
@@ -242,6 +285,7 @@ while run
     
     xlim([-200 size(stack,2)]);
     ylim([0 UIheight]);
+    colormap gray;
     set(gca, 'position', [0 0 1 1]);
     
     
@@ -282,7 +326,7 @@ while run
         
     end;
     
-    if b==120 %x
+    if b==120 %x delet group
         %delete current group
         sel=find(selected_group==Rois.groups);
         [~,ii]=sort(-sel);
@@ -302,20 +346,53 @@ while run
         end;
         Rois.N=numel(Rois.groups);
     end;
-  
-      if b==112 %p, play movie
-          ii=I; %start with whats on screen
-          mfactor=.3;
-          for i=1:100;%size(stack,3);
-              ii=(ii.*(1-mfactor))+stack(:,:,i).*mfactor;
-              %clf;
-              h=imagesc(ii);
     
-              drawnow;
-              delete(h);
-          end;
-      end;
-          
+    if b==122 % z - delete nearest group
+        sel=find(selected_group==Rois.groups);
+        sel=[1:Rois.N];
+        %find nearest
+        dmin=20000;
+        for i=1:numel(sel);
+            j=sel(i);
+            %select roi
+            d= sqrt((x-mean(Rois.outlines{j}([1:end,1],1))).^2+mean(y-Rois.outlines{j}([1:end,1],2)).^2);
+            if d<dmin
+                dmin=d;
+                seldelete=i;
+            end;
+        end;
+        plot(Rois.outlines{seldelete}([1:end,1],1),Rois.outlines{seldelete}([1:end,1],2),'color',[1 0 0].*1);
+        text(0,0,'[z] again to delete','BackgroundColor',[1 1 1]);
+        drawnow;
+        
+        
+        [x,y,b]=ginput(1);
+        if b==122 % x - check and delete
+            Rois.N=Rois.N-1;
+            Rois.masks(seldelete)=[];
+            Rois.groups(seldelete)=[];
+            Rois.outlines(seldelete)=[];
+            Rois.labels(seldelete)=[];
+        else
+            
+        end;
+        
+    end;
+    
+    
+    if b==112 %p, play movie
+        ii=I; %start with whats on screen
+        mfactor=.3;
+        for i=1:100;%size(stack,3);
+            ii=(ii.*(1-mfactor))+stack(:,:,i).*mfactor;
+            %clf;
+            h=imagesc(ii);
+            
+            drawnow;
+            delete(h);
+        end;
+    end;
+    
     if b==110 %n, next group
         updatexc=0;
         selected_group=selected_group+1;
@@ -336,7 +413,7 @@ while run
             updatexc=0;
         end;
     end;
-    if b==3; %right mouse
+    if b==3; %right mouseq
         displayxc=0;
     end;
     if b==113 % q
@@ -364,7 +441,7 @@ while run
         
         Rois.labels{Rois.N}='';
     end;
-        
+    
     if b==32 %space
         t= imfreehand(gca,'Closed' ,1);
         t.setClosed(1);
@@ -375,7 +452,7 @@ while run
         % set(gca, 'position', [0 0 1 1]);
         % drawnow;
         %displayxc=0;
-         
+        
         updatexc=0;
         
         Rois.N=Rois.N+1;
@@ -387,7 +464,7 @@ while run
         Rois.outlines{Rois.N}=r;
         
         Rois.labels{Rois.N}='';
-        
+        selected_group=selected_group+1;
     end;
     title(readInDirectory);
 end;
@@ -410,11 +487,12 @@ for j=1:Rois.N
     hold off;
     vismasks=vismasks+Rois.np_masks{j};
     imagesc( vismasks);
+    daspect([1 1 1]);
     drawnow;
     
     p=regionprops(Rois.np_masks{j});
     Rois.np_outlines{j}=p.BoundingBox;
-            
+    
 end;
 
 %% save Rois
@@ -424,36 +502,74 @@ disp(['saved to ',[Rois.data_dir(1:end-11),'ROIs.mat']]);
 
 
 %% Get F(roi) and F(neuropil) from an imagestack on disk.
-tic
-n=1;
-aa=[];
-%neuropilScale=0.7;
-for i=1:numImages
+
+dirlist=[];
+%{
+dirlist{1}='/media/data_2p/2p/27aug2013/TSeries-08272013-1319-001/registered/';
+dirlist{2}='/media/data_2p/2p/27aug2013/TSeries-08272013-1319-003/registered/';
+dirlist{3}='/media/data_2p/2p/27aug2013/TSeries-08272013-1319-005/registered/';
+dirlist{4}='/media/data_2p/2p/27aug2013/TSeries-08272013-1319-007/registered/';
+%}
+%{
+dirlist{1}='/media/data_2p/2p/27aug2013/TSeries-08272013-1319-002/registered/';
+dirlist{2}='/media/data_2p/2p/27aug2013/TSeries-08272013-1319-004/registered/';
+dirlist{3}='/media/data_2p/2p/27aug2013/TSeries-08272013-1319-006/registered/';
+%}
+dirlist{1}=readInDirectory;
+
+roiValues_norm=[];
+roiValues=[];
+
+Ndirs=numel(dirlist);
+disp([' selected ',num2str(Ndirs),' matching directories']);
+
+c=0; % count trhoug images, in case its broken up into multiple directories
+
+for dd=1:Ndirs
+    disp('%%%%%%%%%%');
+    disp(['dir ',num2str(dd),'/',num2str(Ndirs)]);
+    data_dir=dirlist{dd}
+    disp('%%%%%%%%%%');
     
-    if (rem(i,100)==0)
-        fprintf('%d/%d (%d%%)\n',i,numImages,round(100*(i./numImages)));
-    end;
     
-    imageToMeasure=uint16(imread([readInDirectory 'registered_' int2str(i)],'png'));
+    files = dir([data_dir '*.png']);
+    numImages=numel(files)
     
-    for j=1:Rois.N
-        xa=ceil(min(Rois.outlines{j}(:,1)));
-        xb=floor(max(Rois.outlines{j}(:,1)));
-        ya=ceil(min(Rois.outlines{j}(:,2)));
-        yb=floor(max(Rois.outlines{j}(:,2)));
-        roiValues(i,j)=mean(mean(imageToMeasure(ya:yb,xa:xb).*uint16(Rois.masks{j}(ya:yb,xa:xb))));
-        
-        if 1 % normalize?
-            xa=ceil(Rois.np_outlines{j}(1));
-            xb=floor(Rois.np_outlines{j}(1)+Rois.np_outlines{j}(3));
-            ya=ceil(Rois.np_outlines{j}(2));
-            yb=floor(Rois.np_outlines{j}(2)+Rois.np_outlines{j}(4));
-            roiValues_norm(i,j)=roiValues(i,j)./mean(mean(imageToMeasure(ya:yb,xa:xb).*uint16(Rois.np_masks{j}(ya:yb,xa:xb))));
+    
+    tic
+    n=1;
+    aa=[];
+    %neuropilScale=0.7;
+    for i=1:numImages
+        c=c+1;
+        if (rem(i,100)==0)
+            fprintf('%d/%d (%d%%)\n',i,numImages,round(100*(i./numImages)));
         end;
-    end;
+        
+        imageToMeasure=uint16(imread([readInDirectory 'registered_' int2str(i)],'png'));
+        
+        
+        for j=1:Rois.N
+            
+            
+            xa=ceil(min(Rois.outlines{j}(:,1)));
+            xb=floor(max(Rois.outlines{j}(:,1)));
+            ya=ceil(min(Rois.outlines{j}(:,2)));
+            yb=floor(max(Rois.outlines{j}(:,2)));
+            roiValues(c,j)=mean(mean(imageToMeasure(ya:yb,xa:xb).*uint16(Rois.masks{j}(ya:yb,xa:xb))));
+            
+            if 1 % normalize?
+                xa=ceil(Rois.np_outlines{j}(1));
+                xb=floor(Rois.np_outlines{j}(1)+Rois.np_outlines{j}(3));
+                ya=ceil(Rois.np_outlines{j}(2));
+                yb=floor(Rois.np_outlines{j}(2)+Rois.np_outlines{j}(4));
+                roiValues_norm(c,j)=roiValues(c,j)./mean(mean(imageToMeasure(ya:yb,xa:xb).*uint16(Rois.np_masks{j}(ya:yb,xa:xb))));
+            end;
+        end;
+        
+    end
     
-end
-toc
+end;
 
 %% plot extracted values grouped and mean subtracted
 figure(1); clf; hold on;
@@ -487,7 +603,7 @@ P.b     = 0.0;    % observation bias
 tau     = 2.6;    % decay time constant
 P.gam   = 1-V.dt/tau; % C(t) = gam*C(t-1)
 P.lam   = 0.1;  % firing rate = lam*dt
-P.sig   = 0.1;  % standard deviation of observation noise 
+P.sig   = 0.1;  % standard deviation of observation noise
 
 % simulate data
 N = poissrnd(P.lam*V.dt*ones(T,1)); % simulate spike train
@@ -505,7 +621,7 @@ for c=1:size(roiValues_norm,2)
     F(isnan(F))=0;
     % fast oopsi
     [Nhat Phat] = fast_oopsi(F,V,P);
-   
+    
     
     % plot results
     figure(1), clf; hold on;
@@ -521,11 +637,17 @@ for c=1:size(roiValues_norm,2)
 end;
 
 %% SAVE
+readInDirectory(1:end-11);
 
-disp(readInDirectory);
+disp(readInDirectory(1:end-11))
 
+x=input('warning saving here!! y?','s');
 %manually cd to data dir
-save('roivalues.mat','roiValues','roiValues_norm','roiValues_deconv')
+if (x == 'y')
+    save([readInDirectory(1:end-11),'roivalues.mat'],'roiValues','roiValues_norm','roiValues_deconv');
+    disp('saved');
+end;
+
 
 %%
 axis('tight'), ylabel('C (au)')
@@ -548,9 +670,9 @@ for c=1:size(roiValues,2)
     for i=1:799
         s=((i-1)*122)+1;
         a=a+(roiValues(s:s+122,c));
-       
+        
     end;
-    a=a./799; 
+    a=a./799;
     plot(a/mean(a(:))+c*.1)
     drawnow;
     
