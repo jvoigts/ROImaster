@@ -30,7 +30,11 @@ readInDirectory='/media/data_2p/2p/06Sep2013/TSeries-09062013-cdSom5_203-003/reg
 %readInDirectory='/media/data_2p/2p/06Sep2013/TSeries-09062013-1138-001/registered/';
 %readInDirectory='/media/data_2p/2p/06Sep2013/TSeries-09062013-1138-002/registered/';
 
-readInDirectory='/media/data_2p/2p/20july2014/20July2014_NT_2P_7/TSeries-07202014_c2_400um-001/registered/';
+readInDirectory='/media/data_2p/2p/24July2014_nt_2p_7/TSeries-07252014_nt2p_7_859-001/registered/';
+
+readInDirectory='/media/data_2p/2p/nt_2p_7/27july2014_nt_2p_7/TSeries-07272014-2023_mt_2p_7_782um-004/registered/'
+readInDirectory='/media/data_2p/2p/nt_2p_7/28july2014_nt_2p_7/TSeries-07272014-2023_nt_2p_7_876um-002/registered/'
+
 
 
 %expects pngs
@@ -98,10 +102,15 @@ numFrames=size(stack,3);
 ccimage=zeros(ymax,xmax);
 
 for y=1+w:ymax-w
+        
+    if (rem(y,10)==0)
+        fprintf('%d/%d (%d%%)\n',y,ymax,round(100*(y./ymax)));
+    end;
+    
     for x=1+w:xmax-w
         % Center pixel
         thing1 = reshape(stack(y,x,:)-mean(stack(y,x,:),3),[1 1 numFrames]); % Extract center pixel's time course and subtract its mean
-        ad_a   = sum(thing1.*thing1,3);    % Auto corr, for normalization later
+        ad_a   = sum(thing1.*thing1,3);    % Auto corr, for normalization laterdf
         
         % Neighborhood
         a = stack(y-w:y+w,x-w:x+w,:);         % Extract the neighborhood
@@ -205,7 +214,7 @@ while run
                 
                 it=1;
                 while it<50
-                    sig=find(xc>0.08);
+                    sig=find(xc>0.04);
                     mask=I.*0; mask(sig)=1;
                     mask=conv2(mask,ones(5),'same')>0;
                     update=find((xc==0).*(mask==1));
@@ -480,7 +489,7 @@ end;
 allmasks=allmasks>0;
 
 vismasks=Rois.masks{1}.*0;
-se=strel('disk',4);
+se=strel('disk',6);
 for j=1:Rois.N
     Rois.np_masks{j} = (imdilate(Rois.masks{j},se)-allmasks)>0;
     
