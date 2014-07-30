@@ -37,6 +37,10 @@ readInDirectory='/media/data_2p/2p/nt_2p_7/28july2014_nt_2p_7/TSeries-07272014-2
 
 
 
+readInDirectory='/media/data_2p/2p/nt_2p_7/29july2014_nt_2p_7/TSeries-07292014_nt_2p_7_900u-001/registered/'
+
+
+
 %expects pngs
 
 files = dir([readInDirectory '*.png']);
@@ -489,7 +493,7 @@ end;
 allmasks=allmasks>0;
 
 vismasks=Rois.masks{1}.*0;
-se=strel('disk',6);
+se=strel('disk',7);
 for j=1:Rois.N
     Rois.np_masks{j} = (imdilate(Rois.masks{j},se)-allmasks)>0;
     
@@ -586,7 +590,7 @@ f=normpdf([-10:10],0,1);
 c=0;
 [uu]=unique(Rois.groups);
 c=0;
-for i=1:numel(uu)
+for i=1%:numel(uu)
     c=c+1;
     sel=find(uu(i)==Rois.groups);
     plot(conv2(roiValues(1:2:end,sel)- repmat(mean(roiValues(1:2:end,sel),1)',1,size(roiValues,1)/2)' ,f','same')+c*100);
