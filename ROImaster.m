@@ -47,6 +47,9 @@ readInDirectory='/media/data_2p/2p/nt_2p_7/29july2014_nt_2p_7/TSeries-07292014_n
 readInDirectory='/media/data_2p/2p/nt_2p_9/29jul2014_nt_2p_9_sup/TSeries-07292014_nt_2p_9_157um-001/registered/';
 
 
+readInDirectory='/media/data_2p/2p/nt_2p_7/30jul2014_nt_2p_7_2ndsess/TSeries-07302014-1643_nt_2p_7_760um-001/registered/';
+
+
 
 
 %expects pngs
@@ -105,6 +108,8 @@ selected_group=1;
 %% make local Xcorr and PCA
 % code adapted from http://labrigger.com/blog/2013/06/13/local-cross-corr-images/
 
+
+disp('computing local xcorr');
 w=1; % window size
 
 % Initialize and set up parameters
@@ -154,6 +159,7 @@ stack_v=stack_v-mean(stack_v(:));
 [coeff, score] = pca(stack_v,'Economy','on','NumComponents',100);
 imcomponents=reshape(coeff',100,size(stack,1),size(stack,2));
 pcaimage=(squeeze(mean(abs(imcomponents(1:100,:,:)))));
+
 
 
 %% run ROImaster
@@ -629,6 +635,9 @@ for dd=1:Ndirs
     
 end;
 
+
+disp('ROI luminance extracted, not saved to disk yet');
+
 %% plot extracted values grouped and mean subtracted
 figure(1); clf; hold on;
 f=normpdf([-10:10],0,1);
@@ -646,7 +655,7 @@ end;
 xc=(corrcoef(roiValues));
 xc=xc.*(1-eye(size(xc)));
 clf;
-imagesc(xc)
+imagesc(xc);
 
 %% run spike extrction
 
@@ -693,6 +702,8 @@ for c=1:size(roiValues_norm,2)
     roiValues_deconv(:,c)=Nhat;
     
 end;
+
+disp('spike extraction done');
 
 %% SAVE
 readInDirectory(1:end-11);
