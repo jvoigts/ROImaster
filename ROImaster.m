@@ -5,10 +5,15 @@
 %
 % left mouse: start Xcorr seed
 % right mouse: back to image
+
 % L: label selected group
-% space: add new ROI to current group
+% space: add new ROI to current group and step to next
+% b: add ROI to current group, dont step to next group
+
 % F: display mean
 % D:display std
+% S: display PCA denoised average
+
 % Q: quit
 % X: delete ROIs from current group
 % U: undo/remove last ROI
@@ -38,6 +43,9 @@ readInDirectory='/media/data_2p/2p/nt_2p_7/28july2014_nt_2p_7/TSeries-07272014-2
 
 
 readInDirectory='/media/data_2p/2p/nt_2p_7/29july2014_nt_2p_7/TSeries-07292014_nt_2p_7_900u-001/registered/'
+
+readInDirectory='/media/data_2p/2p/nt_2p_9/29jul2014_nt_2p_9_sup/TSeries-07292014_nt_2p_9_157um-001/registered/';
+
 
 
 
@@ -94,7 +102,7 @@ Rois.outlines=[] % mostly just for plotting
 
 selected_group=1;
 
-%% make local Xcorr
+%% make local Xcorr and PCA
 % code adapted from http://labrigger.com/blog/2013/06/13/local-cross-corr-images/
 
 w=1; % window size
@@ -106,7 +114,7 @@ numFrames=size(stack,3);
 ccimage=zeros(ymax,xmax);
 
 for y=1+w:ymax-w
-        
+    
     if (rem(y,10)==0)
         fprintf('%d/%d (%d%%)\n',y,ymax,round(100*(y./ymax)));
     end;
@@ -128,6 +136,24 @@ for y=1+w:ymax-w
         ccimage(y,x) = mean(ccs(:));       % Get the mean cross corr of the local neighborhood
     end
 end
+
+m=mean(ccimage(:));
+ccimage(1,:)=m;
+ccimage(end,:)=m;
+ccimage(:,1)=m;
+ccimage(:,end)=m;
+
+disp('computing PCA ROI prediction');
+% make PCA composite, this seems to display good roi candidates 
+stack_v=zeros(nstack,size(stack,1)*size(stack,2));
+for i=1:nstack;
+    x=stack(:,:,i);
+    stack_v(i,:)=x(:);
+end
+stack_v=stack_v-mean(stack_v(:));
+[coeff, score] = pca(stack_v,'Economy','on','NumComponents',100);
+imcomponents=reshape(coeff',100,size(stack,1),size(stack,2));
+pcaimage=(squeeze(mean(abs(imcomponents(1:100,:,:)))));
 
 
 %% run ROImaster
@@ -245,11 +271,13 @@ while run
         image((1-mask).*I./10+ ((xc*200)))
         daspect([1 1 1]);
     else
-        if plotstd
+        if plotstd==1
             I=stdim;
             I=ccimage;
-        else
+        elseif plotstd==0
             I=meanim;
+        else
+            I=pcaimage;
         end;
         imagesc(I); daspect([1 1 1]);
         if plotstd
@@ -411,6 +439,9 @@ while run
         selected_group=selected_group+1;
     end;
     
+    if b==115 %s
+          plotstd=2;
+    end;
     if b==100 %d
         plotstd=1;
     end;
@@ -478,6 +509,20 @@ while run
         
         Rois.labels{Rois.N}='';
         selected_group=selected_group+1;
+    end;
+    
+    if b==98 % 'b' add to current group
+        t= imfreehand(gca,'Closed' ,1);
+        t.setClosed(1);
+        m=t.createMask;
+        updatexc=0;
+        Rois.N=Rois.N+1;
+        Rois.masks{Rois.N}=logical(m);
+        Rois.groups(Rois.N)=selected_group;
+        r=t.getPosition;
+        r=max(r,1); r(:,1)=min(r(:,1),size(I,2));r(:,2)=min(r(:,2),size(I,1));
+        Rois.outlines{Rois.N}=r;
+        Rois.labels{Rois.N}='';
     end;
     title(readInDirectory);
 end;
