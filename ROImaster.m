@@ -49,9 +49,14 @@ readInDirectory='/media/data_2p/2p/nt_2p_9/29jul2014_nt_2p_9_sup/TSeries-0729201
 
 readInDirectory='/media/data_2p/2p/nt_2p_7/30jul2014_nt_2p_7_2ndsess/TSeries-07302014-1643_nt_2p_7_760um-001/registered/';
 
+readInDirectory='/media/data_2p/2p/nt_2p_7/05aug2014_nt_2p_7_galvo/TSeries-08052014-1526_810_galvo-001/registered/';
 
 
+readInDirectory='/media/data_2p/2p/nt_2p_9/05aug2014_nt_2p_9/TSeries-08052014-1144_359u-001/registered/';
+readInDirectory='/media/data_ephys3/2p_2/06aug2014_nt_2p_7_deep_dir/TSeries-08052014-1526_774_galvo_dir-003/registered/';
+readInDirectory='/media/data_ephys3/2p_2/06aug2014_nt_2p_9_sup_dir/TSeries-08062014-1750_nt_2p_9_262u_dir-000/registered/';
 
+readInDirectory='/media/data_ephys3/2p_2/06aug2014_nt_2p_7_reso/TSeries-08062014-2148_748_resonant-001/registered/';
 %expects pngs
 
 files = dir([readInDirectory '*.png']);
@@ -160,6 +165,7 @@ stack_v=stack_v-mean(stack_v(:));
 imcomponents=reshape(coeff',100,size(stack,1),size(stack,2));
 pcaimage=(squeeze(mean(abs(imcomponents(1:100,:,:)))));
 
+disp('done');
 
 
 %% run ROImaster
@@ -296,9 +302,9 @@ while run
     %plot outlines
     for i=1:Rois.N
         if (selected_group==Rois.groups(i))
-            plot(Rois.outlines{i}([1:end,1],1),Rois.outlines{i}([1:end,1],2),'color',[.8 1 1].*1);
+            plot(Rois.outlines{i}([1:end,1],1),Rois.outlines{i}([1:end,1],2),'color',[1 1 .2].*1);
         else
-            plot(Rois.outlines{i}([1:end,1],1),Rois.outlines{i}([1:end,1],2),'color',[.4 1 1].*.5);
+            plot(Rois.outlines{i}([1:end,1],1),Rois.outlines{i}([1:end,1],2),'color',[1 0 0].*1);
         end;
         text(mean(Rois.outlines{i}(:,1)),mean(Rois.outlines{i}(:,2)),num2str(Rois.groups(i)),'color',[1 1 1].*.6);
     end;
@@ -607,7 +613,7 @@ for dd=1:Ndirs
     for i=1:numImages
         c=c+1;
         if (rem(i,100)==0)
-            fprintf('%d/%d (%d%%)\n',i,numImages,round(100*(i./numImages)));
+            fprintf('extracting %d/%d (%d%%)\n',i,numImages,round(100*(i./numImages)));
         end;
         
         imageToMeasure=uint16(imread([readInDirectory 'registered_' int2str(i)],'png'));
@@ -681,8 +687,25 @@ roiValues_deconv=[];
 
 for c=1:size(roiValues_norm,2)
     
+    fprintf('%d out of %d \n',c,size(roiValues_norm,2));
+    
     %F=roiValues_norm(:,c)-mean(roiValues_norm(:,c));
-    F=roiValues_norm(:,c);
+    
+    bp=roiValues_norm(:,c);
+    pad_by=1000;
+    bp = [bp(1:pad_by);bp;bp(end-pad_by+1:end)];
+    f=normpdf([-1000:1000],0,400); f=f./sum(f);
+    bp=conv(bp,f','same');
+    bp=bp(pad_by:end-1-pad_by);
+    
+    %{
+    clf; hold on;
+    plot(roiValues_norm(:,c));
+    plot(bp,'r');
+    %}
+    F=roiValues_norm(:,c)-bp;
+    
+    P.sig=std(F);
     
     F=F./std(F);
     F(isnan(F))=0;
@@ -694,7 +717,7 @@ for c=1:size(roiValues_norm,2)
     figure(1), clf; hold on;
     tvec=0:V.dt:(T-1)*V.dt;
     plot(tvec,F);
-    plot(tvec,Nhat*2,'r');
+    plot(tvec,(Nhat*2)+6,'r');
     xlim([0 200]);
     
     drawnow;
