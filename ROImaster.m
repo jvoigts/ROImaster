@@ -57,6 +57,28 @@ readInDirectory='/media/data_ephys3/2p_2/06aug2014_nt_2p_7_deep_dir/TSeries-0805
 readInDirectory='/media/data_ephys3/2p_2/06aug2014_nt_2p_9_sup_dir/TSeries-08062014-1750_nt_2p_9_262u_dir-000/registered/';
 
 readInDirectory='/media/data_ephys3/2p_2/06aug2014_nt_2p_7_reso/TSeries-08062014-2148_748_resonant-001/registered/';
+readInDirectory='/media/data_ephys3/2p_2/06aug2014_nt_2p_7_reso/TSeries-08062014-2148_748_resonant-001/registered/';
+readInDirectory='/media/data_ephys3/2p_2/11aug2014_nt_2p_7_/TSeries-08112014-1812_713u_amp-004/registered/';
+
+
+readInDirectory='/media/data_ephys3/2p_2/12aug2014_nt_2p_9_reso_deep/TSeries-08122014-1933_nt_2p_9_733u_reso-001/registered/';
+readInDirectory='/media/data_ephys3/2p_2/12Aug2014_nt2p7/TSeries-08122014-1812_713u_amp-001/registered/'
+readInDirectory='/media/data_ephys3/2p_2/14aug2014_nt_2p_9_mid_galvo/TSeries-08142014-2306_328u_galvo-001/registered/';
+
+readInDirectory='/media/data_ephys3/2p_2/13aug2014_nt_2p_9_mid_reso/TSeries-08132014-0704_205u_nt_2p_9-012/registered/';
+
+
+
+readInDirectory='/media/data_ephys3/2p_2/15aug2014_nt_2p_7/TSeries-08142014-2306_727u_galvo-002/registered/';
+readInDirectory='/media/data_ephys3/2p_2/15aug2014_nt_2p_9_galvo/TSeries-08152014-1206_342u-003/registered/';
+
+readInDirectory='/media/data_ephys3/2p_2/17aug2014_nt_2p_7_dir/TSeries-08172014-1447_761u_nt_2p_7_dir_galvo-002/registered/';
+readInDirectory='/media/data_ephys3/2p_2/17aug2014_nt_2p_9_deep_galvo_dir/TSeries-08172014-1447_761u_nt_2p_7_dir_galvo-003/registered/';
+
+
+
+
+
 %expects pngs
 
 files = dir([readInDirectory '*.png']);
@@ -147,24 +169,27 @@ for y=1+w:ymax-w
     end
 end
 
+
 m=mean(ccimage(:));
 ccimage(1,:)=m;
 ccimage(end,:)=m;
 ccimage(:,1)=m;
 ccimage(:,end)=m;
 
-disp('computing PCA ROI prediction');
-% make PCA composite, this seems to display good roi candidates 
-stack_v=zeros(nstack,size(stack,1)*size(stack,2));
-for i=1:nstack;
-    x=stack(:,:,i);
-    stack_v(i,:)=x(:);
-end
-stack_v=stack_v-mean(stack_v(:));
-[coeff, score] = pca(stack_v,'Economy','on','NumComponents',100);
-imcomponents=reshape(coeff',100,size(stack,1),size(stack,2));
-pcaimage=(squeeze(mean(abs(imcomponents(1:100,:,:)))));
-
+pcaimage=ccimage;
+if 1
+    disp('computing PCA ROI prediction');
+    % make PCA composite, this seems to display good roi candidates
+    stack_v=zeros(nstack,size(stack,1)*size(stack,2));
+    for i=1:nstack;
+        x=stack(:,:,i);
+        stack_v(i,:)=x(:);
+    end
+    stack_v=stack_v-mean(stack_v(:));
+    [coeff, score] = pca(stack_v,'Economy','on','NumComponents',100);
+    imcomponents=reshape(coeff',100,size(stack,1),size(stack,2));
+    pcaimage=(squeeze(mean(abs(imcomponents(1:100,:,:)))));
+end;
 disp('done');
 
 
@@ -541,7 +566,6 @@ end;
 
 
 
-
 %% make neuropil ROIs for each ROI
 allmasks=  Rois.masks{1};
 for j=2:Rois.N
@@ -632,8 +656,10 @@ for dd=1:Ndirs
                 xa=ceil(Rois.np_outlines{j}(1));
                 xb=floor(Rois.np_outlines{j}(1)+Rois.np_outlines{j}(3));
                 ya=ceil(Rois.np_outlines{j}(2));
-                yb=floor(Rois.np_outlines{j}(2)+Rois.np_outlines{j}(4));
-                roiValues_norm(c,j)=roiValues(c,j)./mean(mean(imageToMeasure(ya:yb,xa:xb).*uint16(Rois.np_masks{j}(ya:yb,xa:xb))));
+                yb=floor(Rois.np_outlines{j}(2)+Rois.np_outlines{j}(4));                      
+                m=mean(mean(imageToMeasure(ya:yb,xa:xb).*uint16(Rois.np_masks{j}(ya:yb,xa:xb))));
+                        roiValues_normby(c,j)=m;
+                        roiValues_norm(c,j)=roiValues(c,j)-m.*.75;
             end;
         end;
         
@@ -648,6 +674,7 @@ disp('ROI luminance extracted, not saved to disk yet');
 figure(1); clf; hold on;
 f=normpdf([-10:10],0,1);
 c=0;
+
 [uu]=unique(Rois.groups);
 c=0;
 for i=1%:numel(uu)
@@ -663,70 +690,92 @@ xc=xc.*(1-eye(size(xc)));
 clf;
 imagesc(xc);
 
-%% run spike extrction
-
-% set simulation metadata
-T       =  size(roiValues,1); % # of time steps% set simulation metadata
-V.dt    =  0.0283;  % time step size
-V.fast_poiss =0;
-
-% initialize params
-P.a     = 1;    % observation scale
-P.b     = 0.0;    % observation bias
-tau     = 2.6;    % decay time constant
-P.gam   = 1-V.dt/tau; % C(t) = gam*C(t-1)
-P.lam   = 0.1;  % firing rate = lam*dt
-P.sig   = 0.1;  % standard deviation of observation noise
-
-% simulate data
-N = poissrnd(P.lam*V.dt*ones(T,1)); % simulate spike train
-C = filter(1,[1 -P.gam],N);         % calcium concentration
-F = P.a*C+P.b + P.sig*randn(T,1);   % observations
-
-roiValues_deconv=[];
-
-for c=1:size(roiValues_norm,2)
+%%
+   % run spike extrction
+    roiValues_norm(isnan(roiValues_norm))=0;
+    roiValues_norm(isinf(roiValues_norm))=0;
     
-    fprintf('%d out of %d \n',c,size(roiValues_norm,2));
     
-    %F=roiValues_norm(:,c)-mean(roiValues_norm(:,c));
+    % set simulation metadata
+    T       =  size(roiValues,1); % # of time steps% set simulation metadata
     
-    bp=roiValues_norm(:,c);
-    pad_by=1000;
-    bp = [bp(1:pad_by);bp;bp(end-pad_by+1:end)];
-    f=normpdf([-1000:1000],0,400); f=f./sum(f);
-    bp=conv(bp,f','same');
-    bp=bp(pad_by:end-1-pad_by);
+    fprintf('%d frames ',T);
+    if T< 2000*50
+        fprintf(' assume galvo ');
+        V.dt    =  0.1;  % time step size
+    else
+        fprintf(' assume resonant ');
+        V.dt    =  0.02;  % time step size
+    end;
+    fprintf('- dt=%f \n', V.dt);
     
-    %{
+    
+    
+    V.fast_poiss =0;
+    V.est_lam=1;
+    V.est_gam=1;
+    V.est_b=0;
+    
+    % initialize params
+    P.a     = 1;    % observation scale
+    P.b     = 0.0;    % observation bias
+    tau     = 2.6;    % decay time constant
+    P.gam   = 1-V.dt/tau; % C(t) = gam*C(t-1)
+    P.lam   = 0.5;  % firing rate = lam*dt
+    P.sig   = 0.1;  % standard deviation of observation noise
+    
+    % simulate data
+    N = poissrnd(P.lam*V.dt*ones(T,1)); % simulate spike train
+    C = filter(1,[1 -P.gam],N);         % calcium concentration
+    F = P.a*C+P.b + P.sig*randn(T,1);   % observations
+    
+    roiValues_deconv=[];
+    
+    for c=1:size(roiValues_norm,2)
+        
+        %fprintf('%d out of %d \n',c,size(roiValues_norm,2));
+        
+        %F=roiValues_norm(:,c)-mean(roiValues_norm(:,c));
+        
+        
+        
+        bp=roiValues_norm(:,c);
+        pad_by=1000;
+        bp = [bp(1:pad_by);bp;bp(end-pad_by+1:end)];
+        f=normpdf([-1000:1000],0,400); f=f./sum(f);
+        bp=conv(bp,f','same');
+        bp=bp(pad_by:end-1-pad_by);
+        
+        %{
     clf; hold on;
     plot(roiValues_norm(:,c));
     plot(bp,'r');
-    %}
-    F=roiValues_norm(:,c)-bp;
-    
-    P.sig=std(F);
-    
-    F=F./std(F);
-    F(isnan(F))=0;
-    % fast oopsi
-    [Nhat Phat] = fast_oopsi(F,V,P);
-    
-    
-    % plot results
-    figure(1), clf; hold on;
-    tvec=0:V.dt:(T-1)*V.dt;
-    plot(tvec,F);
-    plot(tvec,(Nhat*2)+6,'r');
-    xlim([0 200]);
-    
-    drawnow;
-    
-    roiValues_deconv(:,c)=Nhat;
-    
-end;
-
+        %}
+        F=roiValues_norm(:,c)-bp;
+        
+        P.sig=1;%std(F);
+        
+        F=F./std(F);
+        F(isnan(F))=0;
+        % fast oopsi
+        [Nhat Phat] = fast_oopsi(F,V,P);
+        
+        
+        % plot results
+        figure(1), clf; hold on;
+        tvec=0:V.dt:(T-1)*V.dt;
+        plot(tvec,F);
+        plot(tvec,(Nhat*2)+6,'r');
+        xlim([0 200]);
+        
+        drawnow;
+        
+        roiValues_deconv(:,c)=Nhat;
+        
+        
+    end;
 disp('spike extraction done');
+
 
 %% SAVE
 readInDirectory(1:end-11);
@@ -736,7 +785,7 @@ disp(readInDirectory(1:end-11))
 x=input('warning saving here!! y?','s');
 %manually cd to data dir
 if (x == 'y')
-    save([readInDirectory(1:end-11),'roivalues.mat'],'roiValues','roiValues_norm','roiValues_deconv');
+    save([readInDirectory(1:end-11),'roivalues_new.mat'],'roiValues','roiValues_norm','roiValues_deconv');
     disp('saved');
 end;
 
