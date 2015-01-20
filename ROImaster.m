@@ -15,8 +15,9 @@
 % S: display PCA denoised average
 
 % Q: quit
-% X: delete ROIs from current group
-% U: undo/remove last ROI
+% X: delete allROIs from current group
+% Z; delete ROI by clicking on itz
+% U: undo/remove last ROIp
 % N: step to next group
 %
 %
@@ -40,8 +41,6 @@ readInDirectory='/media/data_2p/2p/24July2014_nt_2p_7/TSeries-07252014_nt2p_7_85
 readInDirectory='/media/data_2p/2p/nt_2p_7/27july2014_nt_2p_7/TSeries-07272014-2023_mt_2p_7_782um-004/registered/'
 readInDirectory='/media/data_2p/2p/nt_2p_7/28july2014_nt_2p_7/TSeries-07272014-2023_nt_2p_7_876um-002/registered/'
 
-
-
 readInDirectory='/media/data_2p/2p/nt_2p_7/29july2014_nt_2p_7/TSeries-07292014_nt_2p_7_900u-001/registered/'
 
 readInDirectory='/media/data_2p/2p/nt_2p_9/29jul2014_nt_2p_9_sup/TSeries-07292014_nt_2p_9_157um-001/registered/';
@@ -51,7 +50,6 @@ readInDirectory='/media/data_2p/2p/nt_2p_7/30jul2014_nt_2p_7_2ndsess/TSeries-073
 
 readInDirectory='/media/data_2p/2p/nt_2p_7/05aug2014_nt_2p_7_galvo/TSeries-08052014-1526_810_galvo-001/registered/';
 
-
 readInDirectory='/media/data_2p/2p/nt_2p_9/05aug2014_nt_2p_9/TSeries-08052014-1144_359u-001/registered/';
 readInDirectory='/media/data_ephys3/2p_2/06aug2014_nt_2p_7_deep_dir/TSeries-08052014-1526_774_galvo_dir-003/registered/';
 readInDirectory='/media/data_ephys3/2p_2/06aug2014_nt_2p_9_sup_dir/TSeries-08062014-1750_nt_2p_9_262u_dir-000/registered/';
@@ -59,25 +57,31 @@ readInDirectory='/media/data_ephys3/2p_2/06aug2014_nt_2p_9_sup_dir/TSeries-08062
 readInDirectory='/media/data_ephys3/2p_2/06aug2014_nt_2p_7_reso/TSeries-08062014-2148_748_resonant-001/registered/';
 readInDirectory='/media/data_ephys3/2p_2/06aug2014_nt_2p_7_reso/TSeries-08062014-2148_748_resonant-001/registered/';
 readInDirectory='/media/data_ephys3/2p_2/11aug2014_nt_2p_7_/TSeries-08112014-1812_713u_amp-004/registered/';
-
-
 readInDirectory='/media/data_ephys3/2p_2/12aug2014_nt_2p_9_reso_deep/TSeries-08122014-1933_nt_2p_9_733u_reso-001/registered/';
-readInDirectory='/media/data_ephys3/2p_2/12Aug2014_nt2p7/TSeries-08122014-1812_713u_amp-001/registered/'
+readInDirectory='/media/data_ephys3/2p_2/12Aug2014_nt2p7/TSeries-08122014-1812_713u_amp-001/registered/';
 readInDirectory='/media/data_ephys3/2p_2/14aug2014_nt_2p_9_mid_galvo/TSeries-08142014-2306_328u_galvo-001/registered/';
-
 readInDirectory='/media/data_ephys3/2p_2/13aug2014_nt_2p_9_mid_reso/TSeries-08132014-0704_205u_nt_2p_9-012/registered/';
-
-
-
 readInDirectory='/media/data_ephys3/2p_2/15aug2014_nt_2p_7/TSeries-08142014-2306_727u_galvo-002/registered/';
 readInDirectory='/media/data_ephys3/2p_2/15aug2014_nt_2p_9_galvo/TSeries-08152014-1206_342u-003/registered/';
-
 readInDirectory='/media/data_ephys3/2p_2/17aug2014_nt_2p_7_dir/TSeries-08172014-1447_761u_nt_2p_7_dir_galvo-002/registered/';
 readInDirectory='/media/data_ephys3/2p_2/17aug2014_nt_2p_9_deep_galvo_dir/TSeries-08172014-1447_761u_nt_2p_7_dir_galvo-003/registered/';
+readInDirectory='/media/data_ephys3/2p_2/18aug2014_nt_2p_9_dir_mid/TSeries-08182014-0803_147u_DIR-001/registered/';
+readInDirectory='/media/data_ephys3/2p_2/18auf2014_nt_2p_7_deep_galvo_amp/TSeries-08182014-1223_857u_galvo_dir-004/registered/';
+readInDirectory='/media/data_ephys3/2p_2/19aug2014_nt_2p_9_mid_amp/TSeries-08192014-1336_nt2p9_sup_galvo_amp-001/registered/';
+readInDirectory='/media/data_ephys3/2p_2/13aug2014_nt_2p_7_2nd_avg_reso/TSeries-08132014-0704_705u_nt_2p_7_2nd-011/registered/';
+
+readInDirectory='/media/data_ephys3/2p_2/20aug_nt_2p_7_deep_amp_galvo/TSeries-08202014-1838_amp_galvo_nt2p7_deep_857u-001/registered/';
 
 
+readInDirectory='/media/data_2p/2p/nt_2p_9/27July2014_nt_2p_9/TSeries-07272014-nt_2p_9_898um-002_use/registered/';
+readInDirectory='/media/data_ephys3/2p_2/nt_2p_9/21aug2014_nt2p9_mid_galvo/TSeries-08212014-0738_nt2p9_257u_amp-002_use/registered/'
+
+readInDirectory='/media/data_ephys3/2p_2/nt_2p_7/26aug2014_nt_2p_7_deep_amp/TSeries-08262014-1455_nt2p7_810u-004/registered/';
 
 
+readInDirectory='/media/data_ephys3/2p_2/nt_2p_7/27aug2014_nt2p7_deep_dir/TSeries-08272014-0804_736u_nt2p7_dir-007/registered/';
+
+readInDirectory='/media/data_2p/ephys_ntsr1/jvs1/20jan2015_jvs_1_deep_amp_shorttest/TSeries-01202015-0805_wh_amp_l6bodies-000/registered/'
 
 %expects pngs
 
@@ -98,8 +102,8 @@ for i=1:nstack;
     end;
     
     
-    %fnum=ceil(rand*(numImages-1));
-    fnum=i;
+    fnum=ceil(rand*(numImages-1));
+    %fnum=i;
     
     %fnum=i;
     I=imread([readInDirectory 'registered_' num2str(fnum),'.png']);
@@ -177,7 +181,7 @@ ccimage(:,1)=m;
 ccimage(:,end)=m;
 
 pcaimage=ccimage;
-if 1
+if 0
     disp('computing PCA ROI prediction');
     % make PCA composite, this seems to display good roi candidates
     stack_v=zeros(nstack,size(stack,1)*size(stack,2));
@@ -209,7 +213,7 @@ UIheight=max(size(stack,1),200);
 stdim=(std(single(stack),[],3));
 meanim=mean(stack,3);
 
-f=normpdf([-10:10],0,1);
+f=normpdf([-10:10],0,1);b
 
 roiUIpos=zeros(Ngroups,2);
 for i=1:Ngroups
@@ -242,7 +246,7 @@ while run
     
     if displayxc
         
-        if 0
+        if 1
             if  updatexc
                 % 2 step refinement
                 ref= (squeeze( stack(ceil(y),ceil(x),:) ));
@@ -254,7 +258,7 @@ while run
                         xc(i,j)=c(1,2);
                     end
                 end;
-                imagesc(xc); daspect([1 1 1]); drawnow;
+              %  imagesc(xc); daspect([1 1 1]); drawnow;
                 for fillin=find(xc(:)>.1)' % fill in where we detected any corr >.1
                     [a,b]=ind2sub(size(I),fillin);
                     for i=[-1 0 1]+a
@@ -281,7 +285,7 @@ while run
                 
                 it=1;
                 while it<50
-                    sig=find(xc>0.04);
+                    sig=find(xc>0.04); % <--- configure threshold here
                     mask=I.*0; mask(sig)=1;
                     mask=conv2(mask,ones(5),'same')>0;
                     update=find((xc==0).*(mask==1));
@@ -367,7 +371,7 @@ while run
     set(gca, 'position', [0 0 1 1]);
     
     
-    [x,y,b]=ginput(1)
+    [x,y,b]=ginput(1);
     
     if b==108 %l
         
@@ -404,7 +408,7 @@ while run
         
     end;
     
-    if b==120 %x delet group
+    if b==120 % x delet group
         %delete current group
         sel=find(selected_group==Rois.groups);
         [~,ii]=sort(-sel);
@@ -439,7 +443,7 @@ while run
                 seldelete=i;
             end;
         end;
-        plot(Rois.outlines{seldelete}([1:end,1],1),Rois.outlines{seldelete}([1:end,1],2),'color',[1 0 0].*1);
+        plot(Rois.outlines{seldelete}([1:end,1],1),Rois.outlines{seldelete}([1:end,1],2),'color',[1 0 0].*1,'LineWidth',2);
         text(0,0,'[z] again to delete','BackgroundColor',[1 1 1]);
         drawnow;
         
@@ -560,7 +564,7 @@ while run
         r=max(r,1); r(:,1)=min(r(:,1),size(I,2));r(:,2)=min(r(:,2),size(I,1));
         Rois.outlines{Rois.N}=r;
         Rois.labels{Rois.N}='';
-    end;
+    end;q
     title(readInDirectory);
 end;
 
@@ -574,7 +578,7 @@ end;
 allmasks=allmasks>0;
 
 vismasks=Rois.masks{1}.*0;
-se=strel('disk',7);
+se=strel('disk',7); % <-- configure size here
 for j=1:Rois.N
     Rois.np_masks{j} = (imdilate(Rois.masks{j},se)-allmasks)>0;
     
@@ -652,14 +656,19 @@ for dd=1:Ndirs
             yb=floor(max(Rois.outlines{j}(:,2)));
             roiValues(c,j)=mean(mean(imageToMeasure(ya:yb,xa:xb).*uint16(Rois.masks{j}(ya:yb,xa:xb))));
             
-            if 1 % normalize?
+            if 1 % normalize?   % <---- neuropil correction
                 xa=ceil(Rois.np_outlines{j}(1));
                 xb=floor(Rois.np_outlines{j}(1)+Rois.np_outlines{j}(3));
                 ya=ceil(Rois.np_outlines{j}(2));
-                yb=floor(Rois.np_outlines{j}(2)+Rois.np_outlines{j}(4));                      
+                yb=floor(Rois.np_outlines{j}(2)+Rois.np_outlines{j}(4));
                 m=mean(mean(imageToMeasure(ya:yb,xa:xb).*uint16(Rois.np_masks{j}(ya:yb,xa:xb))));
-                        roiValues_normby(c,j)=m;
-                        roiValues_norm(c,j)=roiValues(c,j)-m.*.75;
+                roiValues_normby(c,j)=m;
+                
+                % -----------------
+                roiValues_norm(c,j)=roiValues(c,j) - m.*.75; % <---- configure neuropil correction method here
+                % -----------------
+                
+                
             end;
         end;
         
@@ -690,8 +699,7 @@ xc=xc.*(1-eye(size(xc)));
 clf;
 imagesc(xc);
 
-%%
-   % run spike extrction
+%% run spike extrction
     roiValues_norm(isnan(roiValues_norm))=0;
     roiValues_norm(isinf(roiValues_norm))=0;
     
