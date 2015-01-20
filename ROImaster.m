@@ -246,7 +246,7 @@ while run
     
     if displayxc
         
-        if 1
+        if 0 %<--- switch interactive crosscorr display method here
             if  updatexc
                 % 2 step refinement
                 ref= (squeeze( stack(ceil(y),ceil(x),:) ));
