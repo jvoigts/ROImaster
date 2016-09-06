@@ -26,62 +26,7 @@
 
 %% read subset of stack
 
-readInDirectory='/media/New Volume/2p/NT_2P4/TSeries-07302013-1301-004/registered/';
-readInDirectory='/media/My Passport/19aug2013/TSeries-08192013-nt2p4_113-001/registered/';
-readInDirectory='/media/My Passport/2p/19aug2013/data_08192013_nt2p6_odd_dir/TSeries-08192013-nt2p6_346-001/registered/';
-readInDirectory='/media/My Passport/2p/23Aug2013/TSeries-08232013-nt_2p4_81_300-001/registered/';
-readInDirectory='/media/My Passport/2p/23Aug2013/TSeries-08232013-nt_2p4_81_300-002/registered/';
-readInDirectory='/media/data_2p/2p/27aug2013/TSeries-08272013-1319-001/registered/';
-readInDirectory='/media/data_2p/2p/06Sep2013/TSeries-09062013-cdSom5_203-003/registered/';
-%readInDirectory='/media/data_2p/2p/06Sep2013/TSeries-09062013-1138-001/registered/';
-%readInDirectory='/media/data_2p/2p/06Sep2013/TSeries-09062013-1138-002/registered/';
-
-readInDirectory='/media/data_2p/2p/24July2014_nt_2p_7/TSeries-07252014_nt2p_7_859-001/registered/';
-
-readInDirectory='/media/data_2p/2p/nt_2p_7/27july2014_nt_2p_7/TSeries-07272014-2023_mt_2p_7_782um-004/registered/'
-readInDirectory='/media/data_2p/2p/nt_2p_7/28july2014_nt_2p_7/TSeries-07272014-2023_nt_2p_7_876um-002/registered/'
-
-readInDirectory='/media/data_2p/2p/nt_2p_7/29july2014_nt_2p_7/TSeries-07292014_nt_2p_7_900u-001/registered/'
-
-readInDirectory='/media/data_2p/2p/nt_2p_9/29jul2014_nt_2p_9_sup/TSeries-07292014_nt_2p_9_157um-001/registered/';
-
-
-readInDirectory='/media/data_2p/2p/nt_2p_7/30jul2014_nt_2p_7_2ndsess/TSeries-07302014-1643_nt_2p_7_760um-001/registered/';
-
-readInDirectory='/media/data_2p/2p/nt_2p_7/05aug2014_nt_2p_7_galvo/TSeries-08052014-1526_810_galvo-001/registered/';
-
-readInDirectory='/media/data_2p/2p/nt_2p_9/05aug2014_nt_2p_9/TSeries-08052014-1144_359u-001/registered/';
-readInDirectory='/media/data_ephys3/2p_2/06aug2014_nt_2p_7_deep_dir/TSeries-08052014-1526_774_galvo_dir-003/registered/';
-readInDirectory='/media/data_ephys3/2p_2/06aug2014_nt_2p_9_sup_dir/TSeries-08062014-1750_nt_2p_9_262u_dir-000/registered/';
-
-readInDirectory='/media/data_ephys3/2p_2/06aug2014_nt_2p_7_reso/TSeries-08062014-2148_748_resonant-001/registered/';
-readInDirectory='/media/data_ephys3/2p_2/06aug2014_nt_2p_7_reso/TSeries-08062014-2148_748_resonant-001/registered/';
-readInDirectory='/media/data_ephys3/2p_2/11aug2014_nt_2p_7_/TSeries-08112014-1812_713u_amp-004/registered/';
-readInDirectory='/media/data_ephys3/2p_2/12aug2014_nt_2p_9_reso_deep/TSeries-08122014-1933_nt_2p_9_733u_reso-001/registered/';
-readInDirectory='/media/data_ephys3/2p_2/12Aug2014_nt2p7/TSeries-08122014-1812_713u_amp-001/registered/';
-readInDirectory='/media/data_ephys3/2p_2/14aug2014_nt_2p_9_mid_galvo/TSeries-08142014-2306_328u_galvo-001/registered/';
-readInDirectory='/media/data_ephys3/2p_2/13aug2014_nt_2p_9_mid_reso/TSeries-08132014-0704_205u_nt_2p_9-012/registered/';
-readInDirectory='/media/data_ephys3/2p_2/15aug2014_nt_2p_7/TSeries-08142014-2306_727u_galvo-002/registered/';
-readInDirectory='/media/data_ephys3/2p_2/15aug2014_nt_2p_9_galvo/TSeries-08152014-1206_342u-003/registered/';
-readInDirectory='/media/data_ephys3/2p_2/17aug2014_nt_2p_7_dir/TSeries-08172014-1447_761u_nt_2p_7_dir_galvo-002/registered/';
-readInDirectory='/media/data_ephys3/2p_2/17aug2014_nt_2p_9_deep_galvo_dir/TSeries-08172014-1447_761u_nt_2p_7_dir_galvo-003/registered/';
-readInDirectory='/media/data_ephys3/2p_2/18aug2014_nt_2p_9_dir_mid/TSeries-08182014-0803_147u_DIR-001/registered/';
-readInDirectory='/media/data_ephys3/2p_2/18auf2014_nt_2p_7_deep_galvo_amp/TSeries-08182014-1223_857u_galvo_dir-004/registered/';
-readInDirectory='/media/data_ephys3/2p_2/19aug2014_nt_2p_9_mid_amp/TSeries-08192014-1336_nt2p9_sup_galvo_amp-001/registered/';
-readInDirectory='/media/data_ephys3/2p_2/13aug2014_nt_2p_7_2nd_avg_reso/TSeries-08132014-0704_705u_nt_2p_7_2nd-011/registered/';
-
-readInDirectory='/media/data_ephys3/2p_2/20aug_nt_2p_7_deep_amp_galvo/TSeries-08202014-1838_amp_galvo_nt2p7_deep_857u-001/registered/';
-
-
-readInDirectory='/media/data_2p/2p/nt_2p_9/27July2014_nt_2p_9/TSeries-07272014-nt_2p_9_898um-002_use/registered/';
-readInDirectory='/media/data_ephys3/2p_2/nt_2p_9/21aug2014_nt2p9_mid_galvo/TSeries-08212014-0738_nt2p9_257u_amp-002_use/registered/'
-
-readInDirectory='/media/data_ephys3/2p_2/nt_2p_7/26aug2014_nt_2p_7_deep_amp/TSeries-08262014-1455_nt2p7_810u-004/registered/';
-
-
-readInDirectory='/media/data_ephys3/2p_2/nt_2p_7/27aug2014_nt2p7_deep_dir/TSeries-08272014-0804_736u_nt2p7_dir-007/registered/';
-
-readInDirectory='/media/data_2p/ephys_ntsr1/jvs1/20jan2015_jvs_1_deep_amp_shorttest/TSeries-01202015-0805_wh_amp_l6bodies-000/registered/'
+readInDirectory='/path_to_registered_image_stack/';
 
 %expects pngs
 
