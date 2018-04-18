@@ -26,34 +26,30 @@
 
 %% read subset of stack
 
-readInDirectory='/path_to_registered_image_stack/';
-
-
+readInDirectory=M.datapath;
+out_name_stack=M.out_name_stack;
+ plane_name='bot';
+ 
 %expects pngs
 
-files = dir([readInDirectory '*.png']);
-numImages=numel(files)
 
 stack= [];
 c=0; cc=0;
 ff=fspecial('gaussian',11,0.5);
 
-nstack=min(1500,numImages);
+numImages=M.Nperstack;
+nstack=min(900);
 
-for stack_num=1:2
+for stack_num=1:9
     c=0;
-    name_nr=sprintf('%s%.4d%s',out_name_stack,stack_num,'_nr.h5')
+    name_nr=sprintf('%s%.4d_%s%s',out_name_stack,stack_num,plane_name,'_nr_nrfine.h5')
     
-    for i=1:M.Nperstack
+    for i=1:100%M.Nperstack
         c=c+1;
         cc=cc+1;
         if (rem(i,100)==0)
             fprintf('%d/%d (%d%%)\n',i,numImages,round(100*(i./nstack)));
         end;
-        
-        
-        fnum=ceil(rand*(numImages-1));
-        %fnum=i;
         
         %fnum=i;
         %I=imread([readInDirectory 'registered_' num2str(fnum),'.png']);
@@ -70,9 +66,10 @@ for stack_num=1:2
     end
     
 end;
+disp('done');
 %% load
 
-load([readInDirectory(1:end-11),'ROIs.mat'])
+load([out_name_stack,plane_name,'_ROIs.mat'])
 
 
 selected_group=1;
@@ -153,7 +150,7 @@ disp('done');
 %% run ROImaster
 figure(1);
 run=1;
-displayxc=0;
+displayxc=0; 
 plotstd=1;
 set(gca, 'position', [0.02 0.04 1 .94]);
 
@@ -166,7 +163,7 @@ UIheight=max(size(stack,1),200);
 stdim=(std(single(stack),[],3));
 meanim=mean(stack,3);
 
-f=normpdf([-10:10],0,1);b
+f=normpdf([-10:10],0,1);
 
 roiUIpos=zeros(Ngroups,2);
 for i=1:Ngroups
@@ -237,7 +234,7 @@ while run
                 xc(ceil(y),ceil(x))=0.11; % seed
                 
                 it=1;
-                while it<50
+                while it<80
                     sig=find(xc>0.04); % <--- configure threshold here
                     mask=I.*0; mask(sig)=1;
                     mask=conv2(mask,ones(5),'same')>0;
@@ -262,7 +259,7 @@ while run
         if updatexc
             xc(ceil(y+[-1:1]),ceil(x+[-1:1]))=xc(ceil(y+[-1:1]),ceil(x+[-1:1])).*.5;
         end;
-        image((1-mask).*I./10+ ((xc*50)))
+        imagesc((1-mask).*I./10+ ((xc*50)))
         daspect([1 1 1]);
     else
         if plotstd==1
@@ -320,11 +317,44 @@ while run
     
     xlim([-200 size(stack,2)]);
     ylim([0 UIheight]);
-    colormap gray;
+    %colormap gray;
+    colormap viridis;
     set(gca, 'position', [0 0 1 1]);
     
     
-    [x,y,b]=ginput(1);
+    [x,y,b]=ginput(1)
+    
+    
+    
+    % automated outlines based on tresholding 
+    if b>=49 & b<58 % number keys, for automatic treshold
+        trs=(b-48)./10;
+        im_bw=xc./max(xc(:))>trs;
+        im_bw(round(y),round(x))=1;
+        im_bw=imgaussfilt(double(im_bw),2)>.5;
+        connected_comp=(~im_bw-imfill(~im_bw,round([y x])));
+        imagesc(connected_comp.*10);
+        drawnow;
+    end
+    if b==96
+        B= bwboundaries(connected_comp);
+        r=fliplr(B{1});
+        updatexc=0;
+        
+        Rois.N=Rois.N+1;
+        
+        Rois.masks{Rois.N}=logical(connected_comp);
+        Rois.groups(Rois.N)=selected_group;
+        
+        r=max(r,1); r(:,1)=min(r(:,1),size(I,2));r(:,2)=min(r(:,2),size(I,1));
+        Rois.outlines{Rois.N}=r;
+        
+        Rois.labels{Rois.N}='';
+        selected_group=selected_group+1;
+        
+        
+        
+    end;
     
     if b==108 %l
         
@@ -361,7 +391,7 @@ while run
         
     end;
     
-    if b==120 % x delet group
+    if b==120 % x delete group
         %delete current group
         sel=find(selected_group==Rois.groups);
         [~,ii]=sort(-sel);
@@ -418,7 +448,7 @@ while run
     if b==112 %p, play movie
         ii=I; %start with whats on screen
         mfactor=.3;
-        for i=1:100;%size(stack,3);
+        for i=1:size(stack,3);
             ii=(ii.*(1-mfactor))+stack(:,:,i).*mfactor;
             %clf;
             h=imagesc(ii);
@@ -530,13 +560,26 @@ for j=2:Rois.N
 end;
 allmasks=allmasks>0;
 
+clf;
+Rois.masks_no_overlap=Rois.masks;
+colormap gray;
 vismasks=Rois.masks{1}.*0;
 se=strel('disk',7); % <-- configure size here
 for j=1:Rois.N
     Rois.np_masks{j} = (imdilate(Rois.masks{j},se)-allmasks)>0;
     
     hold off;
-    vismasks=vismasks+Rois.np_masks{j};
+    %vismasks=vismasks+Rois.np_masks{j};
+    %
+    allmasks_others=  Rois.masks{1}.*0;
+    for jj=1:Rois.N
+        if jj~=j
+            allmasks_others = allmasks_others + Rois.masks{jj};
+        end
+    end;
+    
+   Rois.masks_no_overlap{j}=Rois.masks{j}.*(1-allmasks_others>0);
+   vismasks=vismasks+Rois.masks_no_overlap{j};
     imagesc( vismasks);
     daspect([1 1 1]);
     drawnow;
@@ -544,28 +587,25 @@ for j=1:Rois.N
     p=regionprops(Rois.np_masks{j});
     Rois.np_outlines{j}=p.BoundingBox;
     
+    % recreate outlines from masks ?
+    B=bwboundaries(Rois.masks{j});
+    Rois.outlines{j} =fliplr(B{1});
+    
 end;
 
 %% save Rois
-save([Rois.data_dir(1:end-11),'ROIs.mat'],'Rois')
-disp(['saved to ',[Rois.data_dir(1:end-11),'ROIs.mat']]);
+
+save([out_name_stack,plane_name,'_ROIs.mat'],'Rois')
+
+disp(['saved to ',[out_name_stack,plane_name,'_ROIs.mat']]);
 
 
 
 %% Get F(roi) and F(neuropil) from an imagestack on disk.
 
+    
+             
 dirlist=[];
-%{
-dirlist{1}='/media/data_2p/2p/27aug2013/TSeries-08272013-1319-001/registered/';
-dirlist{2}='/media/data_2p/2p/27aug2013/TSeries-08272013-1319-003/registered/';
-dirlist{3}='/media/data_2p/2p/27aug2013/TSeries-08272013-1319-005/registered/';
-dirlist{4}='/media/data_2p/2p/27aug2013/TSeries-08272013-1319-007/registered/';
-%}
-%{
-dirlist{1}='/media/data_2p/2p/27aug2013/TSeries-08272013-1319-002/registered/';
-dirlist{2}='/media/data_2p/2p/27aug2013/TSeries-08272013-1319-004/registered/';
-dirlist{3}='/media/data_2p/2p/27aug2013/TSeries-08272013-1319-006/registered/';
-%}
 dirlist{1}=readInDirectory;
 
 roiValues_norm=[];
@@ -576,60 +616,77 @@ disp([' selected ',num2str(Ndirs),' matching directories']);
 
 c=0; % count trhoug images, in case its broken up into multiple directories
 
-for dd=1:Ndirs
-    disp('%%%%%%%%%%');
-    disp(['dir ',num2str(dd),'/',num2str(Ndirs)]);
-    data_dir=dirlist{dd}
-    disp('%%%%%%%%%%');
+
+for stack_num=1:M.Nstacks
     
+    name_nr=sprintf('%s%.4d%s%s',out_name_stack,stack_num,'_',plane_name,'_nr.h5')   
     
-    files = dir([data_dir '*.png']);
-    numImages=numel(files)
+    fileinfo=h5info(name_nr);
+     numImages=fileinfo.Datasets.Dataspace.Size(3);
     
-    
-    tic
-    n=1;
-    aa=[];
-    %neuropilScale=0.7;
-    for i=1:numImages
-        c=c+1;
-        if (rem(i,100)==0)
-            fprintf('extracting %d/%d (%d%%)\n',i,numImages,round(100*(i./numImages)));
-        end;
+        disp('%%%%%%%%%%');
+        disp(['stack ',num2str(stack_num),'/',num2str(M.Nstacks)]);
         
-        imageToMeasure= uint16(bigread2(name,fnum,1));
-     %   imageToMeasure=uint16(imread([readInDirectory 'registered_' int2str(i)],'png'));
+        disp('%%%%%%%%%%');
         
         
-        for j=1:Rois.N
-            
-            
-            xa=ceil(min(Rois.outlines{j}(:,1)));
-            xb=floor(max(Rois.outlines{j}(:,1)));
-            ya=ceil(min(Rois.outlines{j}(:,2)));
-            yb=floor(max(Rois.outlines{j}(:,2)));
-            roiValues(c,j)=mean(mean(imageToMeasure(ya:yb,xa:xb).*uint16(Rois.masks{j}(ya:yb,xa:xb))));
-            
-            if 1 % normalize?   % <---- neuropil correction
-                xa=ceil(Rois.np_outlines{j}(1));
-                xb=floor(Rois.np_outlines{j}(1)+Rois.np_outlines{j}(3));
-                ya=ceil(Rois.np_outlines{j}(2));
-                yb=floor(Rois.np_outlines{j}(2)+Rois.np_outlines{j}(4));
-                m=mean(mean(imageToMeasure(ya:yb,xa:xb).*uint16(Rois.np_masks{j}(ya:yb,xa:xb))));
-                roiValues_normby(c,j)=m;
-                
-                % -----------------
-                roiValues_norm(c,j)=roiValues(c,j) - m.*.75; % <---- configure neuropil correction method here
-                % -----------------
-                
-                
+        tic
+        n=1;
+        aa=[];
+        %neuropilScale=0.7;
+        for i=1:numImages
+            c=c+1;
+            if (rem(i,100)==0)
+                fprintf('extracting %d/%d (%d%%)\n',i,numImages,round(100*(i./numImages)));
             end;
-        end;
-        
-    end
+            
+            %imageToMeasure= uint16(bigread2(name,fnum,1));
+            imageToMeasure= bigread2(name_nr,i,1);
+            %   imageToMeasure=uint16(imread([readInDirectory 'registered_' int2str(i)],'png'));
+            
+            
+            for j=1:Rois.N
+                
+                %old, pre apr18
+                xa=floor(min(Rois.outlines{j}(:,1)));
+                xb=ceil(max(Rois.outlines{j}(:,1)));
+                ya=floor(min(Rois.outlines{j}(:,2)));
+                yb=ceil(max(Rois.outlines{j}(:,2)));
+                
+                
+                %{
+                o=Rois.outlines{j};
+                xa=floor(o(1));
+                xb=ceil(o(1)+o(2));
+                ya=floor(o(3));
+                yb=ceil(o(3)+o(4));
+                %}
+                
+                
+                roiValues(c,j)=mean(mean(imageToMeasure(ya:yb,xa:xb).*uint16(Rois.masks_no_overlap{j}(ya:yb,xa:xb))));
+                
+                if 0 % normalize?   % <---- neuropil correction
+                    xa=ceil(Rois.np_outlines{j}(1));
+                    xb=floor(Rois.np_outlines{j}(1)+Rois.np_outlines{j}(3));
+                    ya=ceil(Rois.np_outlines{j}(2));
+                    yb=floor(Rois.np_outlines{j}(2)+Rois.np_outlines{j}(4));
+                    m=mean(mean(imageToMeasure(ya:yb,xa:xb).*uint16(Rois.np_masks{j}(ya:yb,xa:xb))));
+                    roiValues_normby(c,j)=m;
+                    
+                    % -----------------
+                    roiValues_norm(c,j)=roiValues(c,j) - m.*.75; % <---- configure neuropil correction method here
+                    % -----------------
+                    
+                    
+                end;
+            end;
+            
+        end
+
     
 end;
 
+% save('/media/jvoigts/data1/jv_rsc_jan22/jv_rsc_02_000_012_roivalues_raw_manual.mat','roiValues');
 
 disp('ROI luminance extracted, not saved to disk yet');
 
@@ -652,6 +709,7 @@ xc=(corrcoef(roiValues));
 xc=xc.*(1-eye(size(xc)));
 clf;
 imagesc(xc);
+daspect([1 1 1]);
 
 %% run spike extrction
     roiValues_norm(isnan(roiValues_norm))=0;
@@ -742,13 +800,16 @@ disp('spike extraction done');
 %% SAVE
 readInDirectory(1:end-11);
 
-disp(readInDirectory(1:end-11))
+disp([out_name_stack,plane_name,'_roivalues_new.mat'])
+
 
 x=input('warning saving here!! y?','s');
 %manually cd to data dir
 if (x == 'y')
-    save([readInDirectory(1:end-11),'roivalues_new.mat'],'roiValues','roiValues_norm','roiValues_deconv');
+    save([out_name_stack,plane_name,'_roivalues_new.mat'],'roiValues','roiValues_norm');
     disp('saved');
+else
+    disp('NOT SAVED');
 end;
 
 
