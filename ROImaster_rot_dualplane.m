@@ -28,7 +28,7 @@
 
 readInDirectory=M.datapath;
 out_name_stack=M.out_name_stack;
- plane_name='bot';
+ plane_name='top';
  
 %expects pngs
 
@@ -40,7 +40,7 @@ ff=fspecial('gaussian',11,0.5);
 numImages=M.Nperstack;
 nstack=min(900);
 
-for stack_num=1:9
+for stack_num=1:10
     c=0;
     name_nr=sprintf('%s%.4d_%s%s',out_name_stack,stack_num,plane_name,'_nr_nrfine.h5')
     
@@ -603,8 +603,7 @@ disp(['saved to ',[out_name_stack,plane_name,'_ROIs.mat']]);
 
 %% Get F(roi) and F(neuropil) from an imagestack on disk.
 
-    
-             
+
 dirlist=[];
 dirlist{1}=readInDirectory;
 
@@ -619,7 +618,7 @@ c=0; % count trhoug images, in case its broken up into multiple directories
 
 for stack_num=1:M.Nstacks
     
-    name_nr=sprintf('%s%.4d%s%s',out_name_stack,stack_num,'_',plane_name,'_nr.h5')   
+    name_nr=sprintf('%s%.4d%s%s',out_name_stack,stack_num,'_',plane_name,'_nr_nrfine.h5')   
     
     fileinfo=h5info(name_nr);
      numImages=fileinfo.Datasets.Dataspace.Size(3);
@@ -663,7 +662,7 @@ for stack_num=1:M.Nstacks
                 %}
                 
                 
-                roiValues(c,j)=mean(mean(imageToMeasure(ya:yb,xa:xb).*uint16(Rois.masks_no_overlap{j}(ya:yb,xa:xb))));
+                roiValues(c,j)=sum(sum(imageToMeasure(ya:yb,xa:xb).*uint16(Rois.masks_no_overlap{j}(ya:yb,xa:xb)))) ./ sum(sum(uint16(Rois.masks_no_overlap{j}(ya:yb,xa:xb)))) ;
                 
                 if 0 % normalize?   % <---- neuropil correction
                     xa=ceil(Rois.np_outlines{j}(1));
